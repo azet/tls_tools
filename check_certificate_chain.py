@@ -57,7 +57,7 @@ def main():
         print "- [X.509 Extension Details]:"
         for k in range(0, cert.get_ext_count()):
             ext = cert.get_ext_at(k)
-            print " -- x509_" + ext.get_name() + ":\n\t%s\n" % ext.get_value()
+            print " -- x509_" + ext.get_name() + ":\n\t%s" % ext.get_value()
 
 if __name__ == '__main__':
     if len(sys.argv) <= 2:
