@@ -52,14 +52,14 @@ def main():
             print "- [Authority]:\t\tIs not a CA"
         print "- [Version]:\t\t%s"          % cert.get_version()
         print "- [Serial No.]:\t\t%s"       % cert.get_serial_number()
+        print "- [X.509 Extension Details]:"
+        for k in range(0, cert.get_ext_count()):
+            ext = cert.get_ext_at(k)
+            print "  -- [x509_" + ext.get_name() + "]:\n\t   %s" % ext.get_value().replace('\n', ' ')
         print "- [Fingerprint]:\t(hex) %s"  % cert.get_fingerprint()
         print "- [Keysize]:\t\t%s Bits"     % (pkey.size() * 8)
         print "- [RSA Modulus]:\t(hex) %s"  % pkey.get_modulus()
         print "- [RSA Key]:\n%s"            % pkey.get_rsa().as_pem()
-        print "- [X.509 Extension Details]:"
-        for k in range(0, cert.get_ext_count()):
-            ext = cert.get_ext_at(k)
-            print " -- x509_" + ext.get_name() + ":\n\t%s" % ext.get_value()
 
 if __name__ == '__main__':
     if len(sys.argv) <= 2:
