@@ -1,3 +1,7 @@
-## TLS Tools
+### TLS Tools
 
-	* check_certificate_chain.py: does exactly what the name suggests
+* check_certificate_chain.py: does exactly what the name suggests
+
+
+### Contribution
+Yes. Please.
