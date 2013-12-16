@@ -12,7 +12,8 @@
 #   MIT License
 #
 # TODO: 
-# Add interface to certificate-transparency.
+# - Add interface to certificate-transparency.
+# - Check/Verify certificates.
 #
 import sys
 import M2Crypto.SSL
