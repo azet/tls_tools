@@ -45,7 +45,7 @@ def main():
         print "- [Subject]:\t\t%s"          % cert.get_subject().as_text()
         print "- [Issuer]:\t\t%s"           % cert.get_issuer().as_text()
         print "- [Valid from]:\t\t%s"       % cert.get_not_before()
-        print "- [Valid until]:\t%s"      % cert.get_not_after()
+        print "- [Valid until]:\t%s"        % cert.get_not_after()
         if cert.check_ca():
             print "- [Authority]:\t\tIs a CA"
         else:
