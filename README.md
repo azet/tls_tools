@@ -1,5 +1,5 @@
 ## nmap-heartbleed
-nmap NSE plugin to scan for the [](http://heartbleed.com) "Heartbleed vulnerability") in OpenSSL.
+nmap NSE plugin to scan for the [Heartbleed Vulnerability](http://heartbleed.com) in OpenSSL.
 
 See: 
 * https://www.openssl.org/news/secadv_20140407.txt
