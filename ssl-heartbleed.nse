@@ -39,7 +39,7 @@ local         done = bin.pack("H", [[
 ]])
 ---- Heartbeat payload:
 local      payload = bin.pack("H", [[
-    18 03 02 00 03 01 40 00
+    18 03 01 00 03 01 40 00
 ]])
 ---- a TLS record looks like this:
 --   1 Byte   1 Byte   1 Byte   1 Byte
@@ -86,7 +86,7 @@ action   = function(host, port)
 
     -- create socket
     socket = nmap.new_socket()
-    socket:set_timeout(2000)
+    socket:set_timeout(800)
     status, error = socket:connect(host, port, "tcp")
     if status then
         stdnse.print_debug("Connected.")
@@ -100,21 +100,15 @@ action   = function(host, port)
 
     while true do
         status, type, version, length = r_header(socket)
-        if not status then break end
+        if not status then 
+            stdnse.print_debug("reached TLS timeout, this is OK.")
+            vuln   = false
+            status = true
+            break
+        end
         if message_len(length) > 0 then
             data = r_message(socket, message_len(length))
         end
-
-        print "\n--------------\ntype"
-        print(bin.unpack("H", type))
-        print "version"
-        print(bin.unpack("HH", version))
-        print "len"
-        print(message_len(length))
-        print "data"
-        print(bin.unpack("HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH", data))
-        print "--------------"
-
 
         if data == done then
             -- recieved TLS ServerHello done
@@ -133,7 +127,7 @@ action   = function(host, port)
             vuln = false
             break
         elseif type == alert then
-            stdnse.print_debug("Got TLS ALERT, this is OK")
+            stdnse.print_debug("Got TLS ALERT, this is OK.")
             vuln = false
             break
         end
@@ -144,6 +138,6 @@ action   = function(host, port)
     txt = "VULNERABLE to Heartbleed."
     if not status then return stdnse.format_output(status, "TLS: " .. error)
     elseif   vuln then return stdnse.format_output(status, txt)
-    else               return stdnse.format_output(status, "NOT "  .. txt) 
+    else               return stdnse.format_output(status, "NOT "  .. txt)
     end
 end
