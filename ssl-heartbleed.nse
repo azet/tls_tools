@@ -1,8 +1,8 @@
 description = [[
-    Check if a service is vulnerable to Heartbleed 
+    Check if a service is vulnerable to Heartbleed
     (http://heartbleed.com)
 
-    ClientHello mercilessly stolen from Martin Bosslet: 
+    ClientHello mercilessly stolen from Martin Bosslet:
     https://github.com/emboss/heartbeat
 ]]
 
@@ -18,7 +18,7 @@ local       stdnse = require "stdnse"
 
 ---- a TLS ClientHello contains:
 -- ProtocolVersion, Random, SessionID
--- CipherSuite, CompressionMethod and 
+-- CipherSuite, CompressionMethod and
 -- optional Extensions
 local client_hello = bin.pack("H", [[
     16 03 01 00 38 01 00 00 34 03
@@ -45,13 +45,13 @@ local      payload = bin.pack("H", [[
 --   1 Byte   1 Byte   1 Byte   1 Byte
 -- +--------+--------+--------+--------+
 -- |  type  |                          |
--- +--------+--------+-----------------+ 
+-- +--------+--------+-----------------+
 -- |     version     |      length     |
 -- +-----------------+-----------------+
 -- |             message N             |
 -- +-----------------------------------+
 -- |                 .                 |
---                   .                 
+--                   .
 --                   .
 local     r_header = function(socket)
     -- TLS record header
@@ -82,8 +82,7 @@ portrule = shortport.ssl
 action   = function(host, port)
     local   status  = true
     local   error   = false
-    local   vuln,
-            type, version, length, data
+    local   socket, vuln, txt, type, version, length, data
 
     -- create socket
     socket = nmap.new_socket()
@@ -99,11 +98,9 @@ action   = function(host, port)
         stdnse.print_debug("Sent TLS ClientHello.")
     end
 
-    repeat
+    while true do
         status, type, version, length = r_header(socket)
-        if not status then
-            break
-        end
+        if not status then break end
         if message_len(length) > 0 then
             data = r_message(socket, message_len(length))
         end
@@ -113,41 +110,40 @@ action   = function(host, port)
         print "version"
         print(bin.unpack("HH", version))
         print "len"
-        print (message_len(length))
+        print(message_len(length))
         print "data"
-        print(bin.unpack("HHHHHHHHHHHHHHHHHHHHHHHH", data))
+        print(bin.unpack("HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH", data))
         print "--------------"
 
-[[
+
         if data == done then
+            -- recieved TLS ServerHello done
             stdnse.print_debug("ServerHello done.")
+            -- send Heartbeat payload
             status, error = socket:send(payload)
-            if not status then
-                break
-            else
+            if not status then break else
                 stdnse.print_debug("Sent Payload.")
             end
         elseif type == heartbeat and string.len(data) > 3 then
             stdnse.print_debug("Got Heartbeat TLS type and data!")
             vuln = true
+            break
         elseif type == heartbeat and string.len(data) < 3 then
             stdnse.print_debug("Got Heartbeat TLS type and but no data.")
             vuln = false
-        --elseif type == alert then
-        --    stdnse.print_debug("Got TLS ALERT, this is OK", nil)
-        --    vuln = false
+            break
+        elseif type == alert then
+            stdnse.print_debug("Got TLS ALERT, this is OK")
+            vuln = false
+            break
         end
-]]
-    until vuln ~= nil
+    end
 
     socket:close()
 
-    local txt = "VULNERABLE to the heartbleed bug."
-    if not status then
-        return stdnse.format_output(status, error)
-    elseif vuln then
-        return stdnse.format_output(status, txt)
-    else
-        return stdnse.format_output(status, "NOT " .. txt)
+    txt = "VULNERABLE to Heartbleed."
+    if not status then return stdnse.format_output(status, "TLS: " .. error)
+    elseif   vuln then return stdnse.format_output(status, txt)
+    else               return stdnse.format_output(status, "NOT "  .. txt) 
     end
 end
