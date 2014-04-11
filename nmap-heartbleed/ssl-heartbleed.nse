@@ -16,7 +16,8 @@ local        match = require "match"
 local    shortport = require "shortport"
 local       stdnse = require "stdnse"
 
----- a TLS ClientHello contains:
+----  TLS Handshake (type 16)
+-- a ClientHello contains:
 -- ProtocolVersion, Random, SessionID
 -- CipherSuite, CompressionMethod and
 -- optional Extensions
@@ -29,19 +30,19 @@ local client_hello = bin.pack("H", [[
     00 35 01 00 00 05 00 0f 00 01
     01
 ]])
----- TLS Heartbeat extension type:
+----  TLS Heartbeat extension type:
 local    heartbeat = bin.pack("H", "18")
----- TLS ALERT type:
+----  TLS ALERT type:
 local        alert = bin.pack("H", "15")
----- TLS ServerHello done:
+----  TLS ServerHello done:
 local         done = bin.pack("H", [[
     0e 00 00 00
 ]])
----- Heartbeat payload:
+----  Heartbeat payload:
 local      payload = bin.pack("H", [[
     18 03 01 00 03 01 40 00
 ]])
----- a TLS record looks like this:
+----  a TLS record looks like this:
 --   1 Byte   1 Byte   1 Byte   1 Byte
 -- +--------+--------+--------+--------+
 -- |  type  |                          |
@@ -92,7 +93,7 @@ action   = function(host, port)
         stdnse.print_debug("Connected.")
     end
 
-    -- send TLS ClientHello
+    -- send TLS Handshake ClientHello
     status, error = socket:send(client_hello)
     if status then
         stdnse.print_debug("Sent TLS ClientHello.")
@@ -111,7 +112,7 @@ action   = function(host, port)
         end
 
         if data == done then
-            -- recieved TLS ServerHello done
+            -- recieved TLS Handshake ServerHello done
             stdnse.print_debug("ServerHello done.")
             -- send Heartbeat payload
             status, error = socket:send(payload)
@@ -123,7 +124,7 @@ action   = function(host, port)
             vuln = true
             break
         elseif type == heartbeat and string.len(data) < 3 then
-            stdnse.print_debug("Got Heartbeat TLS type and but no data.")
+            stdnse.print_debug("Got Heartbeat TLS type but no data.")
             vuln = false
             break
         elseif type == alert then
