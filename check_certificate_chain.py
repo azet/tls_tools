@@ -21,7 +21,7 @@ import M2Crypto.SSL
 def main():
     server  = str(sys.argv[1])
     port    = int(sys.argv[2])
-
+    
     tls_context = M2Crypto.SSL.Context();
     # we want to check unknown CAs as well
     tls_context.set_allow_unknown_ca(True)
@@ -31,16 +31,16 @@ def main():
     conn = M2Crypto.SSL.Connection(tls_context)
     conn.connect((server, port))
  
-    chain   = conn.get_peer_cert_chain()
+    chain = conn.get_peer_cert_chain()
 
     print "\n>> Certificate Chain:\n"
     i = 0
-    for cert in chain:
+    for cert in reversed(chain):
         i += 1
-        print " [+]" + "*"*i + "\t\t%s" % cert.get_subject().as_text()
+        print " [+] " + "*"*i + "\t\t%s" % cert.get_subject().as_text()
 
     print "\n>> Certificate Information:\n"
-    for cert in chain:
+    for cert in reversed(chain):
         pkey = cert.get_pubkey()
         print "." * 80
         print "- [Subject]:\t\t%s"          % cert.get_subject().as_text()
@@ -56,7 +56,7 @@ def main():
         print "- [X.509 Extension Details]:"
         for k in range(0, cert.get_ext_count()):
             ext = cert.get_ext_at(k)
-            print "  -- [x509_" + ext.get_name() + "]:\n\t   %s" % ext.get_value().replace('\n', ' ')
+            print "  `-- [x509_" + ext.get_name() + "]:\n\t   %s\n" % ext.get_value().replace('\n', ' ')
         print "- [Fingerprint]:\t(hex) %s"  % cert.get_fingerprint()
         print "- [Keysize]:\t\t%s Bits"     % (pkey.size() * 8)
         print "- [RSA Modulus]:\t(hex) %s"  % pkey.get_modulus()
