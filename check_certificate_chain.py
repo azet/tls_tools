@@ -29,6 +29,7 @@ def main():
     tls_context.set_verify(M2Crypto.SSL.verify_none, False)
  
     conn = M2Crypto.SSL.Connection(tls_context)
+    conn.set_tlsext_host_name(sys.argv[1])
     conn.connect((server, port))
  
     chain = conn.get_peer_cert_chain()
